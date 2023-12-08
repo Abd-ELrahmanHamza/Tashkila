@@ -3,15 +3,15 @@ import nltk
 import tkseem as tk
 
 # %%
-txt_file = open("clean_out/X_words.txt", "r")
+txt_file = open("clean_out/merged.txt", "r")
 
 txt = txt_file.read()
-txt.replace("\n", " ")
+txt = txt.replace("\n", " ")
 # print(txt)
 toks = nltk.word_tokenize(txt)
 print(toks[0:100])
 print(len(toks))
-
+print(len(set(toks)) , "unique words")
 # %%
 
 
@@ -20,27 +20,29 @@ class MegaTokenizer:
     A wrapper class for the tkseem tokenizer.
     """
 
-    def __init__(self, text, tokenizer='morph'):
+    def __init__(self, text):
         self.text = text
 
-        self.tok = tk.SentencePieceTokenizer()
-        self.tok.train('clean_out/X_words.txt')
+        self.tok = tk.SentencePieceTokenizer(vocab_size=50000)
+        self.tok.train('clean_out/merged.txt')
+        # -----------------
+        # self.tok = tk.WordTokenizer(vocab_size=20000)
+        # self.tok.train('clean_out/merged.txt')
+        # ------------------
+        # self.tok = tk.MorphologicalTokenizer()
+        # self.tok.train()
 
-    def tokenize(self,txt):
+    def tokenize(self, txt):
         """
         Tokenize the text.
         """
         return self.tok.tokenize(txt)
 
-    def tokenize_to_file(self, filename):
+    def get_tokenizer(self):
         """
-        Tokenize the text and write to a file.
+        Return the tokenizer.
         """
-        # toks = self.tokenize()
-        # with open(filename, "w") as f:
-        #     for tok in toks:
-        #         f.write(tok + "\n")
-        pass
+        return self.tok
 
 
 C = MegaTokenizer(txt)
@@ -55,3 +57,8 @@ print(out[:30])
 
 # print num of unique tokens in the output
 print(len(set(out)))
+
+#% 
+
+co = C.tokenize('السلام عليكم ورحمة الله وبركاته')
+print(co)
