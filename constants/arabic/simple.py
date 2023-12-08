@@ -113,7 +113,7 @@ SHADDA: str = "\u0651"
 """ Arabic Shadda """
 SUKUN: str = "\u0652"
 """ Arabic Sukun """
-
+#  + 3 compound shaddat
 
 # Arabic Numbers
 ARABIC_ZERO: str = "\u0660"
