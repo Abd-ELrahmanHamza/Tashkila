@@ -11,7 +11,7 @@ txt = txt.replace("\n", " ")
 toks = nltk.word_tokenize(txt)
 print(toks[0:100])
 print(len(toks))
-print(len(set(toks)) , "unique words")
+print(len(set(toks)), "unique words")
 # %%
 
 
@@ -23,11 +23,12 @@ class MegaTokenizer:
     def __init__(self, text):
         self.text = text
 
-        self.tok = tk.SentencePieceTokenizer(vocab_size=50000)
-        self.tok.train('clean_out/merged.txt')
-        # -----------------
-        # self.tok = tk.WordTokenizer(vocab_size=20000)
+        # self.tok = tk.SentencePieceTokenizer(
+        #     vocab_size=50000, special_tokens=['<s>', '</s>'])
         # self.tok.train('clean_out/merged.txt')
+        # -----------------
+        self.tok = tk.WordTokenizer(vocab_size=500000000)
+        self.tok.train('clean_out/merged.txt')
         # ------------------
         # self.tok = tk.MorphologicalTokenizer()
         # self.tok.train()
@@ -58,7 +59,7 @@ print(out[:30])
 # print num of unique tokens in the output
 print(len(set(out)))
 
-#% 
+# %
 
-co = C.tokenize('السلام عليكم ورحمة الله وبركاته')
+co = C.tokenize('الله الله الله السلام عليكم ورحمة الله و بركاته')
 print(co)
