@@ -1,0 +1,23 @@
+from constants import *
+
+DS_ARABIC_LETTERS: list[str] = ARABIC_LETTERS + [' '] 
+
+NON_HARAKA = '$'
+
+DS_HARAKAT = [
+    FATHA,
+    DAMMA,
+    KASRA,
+    SUKUN,
+    FATHATAN,
+    DAMMATAN,
+    KASRATAN,
+    SHADDA,
+    SHADDA + FATHA,
+    SHADDA + DAMMA,
+    SHADDA + KASRA,
+    SHADDA + FATHATAN,
+    SHADDA + DAMMATAN,
+    SHADDA + KASRATAN,
+    NON_HARAKA
+]
