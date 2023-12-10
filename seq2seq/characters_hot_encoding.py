@@ -7,6 +7,11 @@ regex = re.compile(r'.')
 # Define the vocabulary of characters
 vocab = regex.findall(araby.LETTERS)
 
+# add start and end of sequence characters and space
+vocab.append('<s>')
+vocab.append(' ')
+vocab.append('</s>')
+
 # characters to index and vice versa
 char2idx = {u:i for i, u in enumerate(vocab)}
 idx2char = np.array(vocab)
