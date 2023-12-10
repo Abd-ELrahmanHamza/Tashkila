@@ -21,3 +21,4 @@ DS_HARAKAT = [
     SHADDA + KASRATAN,
     NON_HARAKA
 ]
+
