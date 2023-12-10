@@ -1,6 +1,6 @@
 from constants import *
 
-DS_ARABIC_LETTERS: list[str] = ARABIC_LETTERS + [' '] 
+DS_ARABIC_LETTERS: list[str] = ARABIC_LETTERS + [' '] + ARABIC_PUNCTUATIONS + ['.']
 
 NON_HARAKA = '$'
 
@@ -21,3 +21,4 @@ DS_HARAKAT = [
     SHADDA + KASRATAN,
     NON_HARAKA
 ]
+
