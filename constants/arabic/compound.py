@@ -136,7 +136,10 @@ ARABIC_PUNCTUATIONS: list[str] = [
     ORNATE_RIGHT_PARENTHESIS,
     ARABIC_DASH,
     ARABIC_END_OF_AYAH,
-    ARABIC_START_OF_AYAH
+    ARABIC_START_OF_AYAH,
+    ':',
+    '؛',
+    '؟',
 ]
 """ Arabic punctuations. """
 
@@ -216,7 +219,7 @@ OTHER_HARAKAT: list[str] = [
     ALEF_SUBSCRIPT,
     ALEF_SUPERSCRIPT,
     DAMMA_INVERTED,
-    NOON_MARK, 
+    NOON_MARK,
     ZWARAKAY,
     DOT_BELOW,
     DAMMA_REVERSED,
