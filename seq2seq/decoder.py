@@ -6,7 +6,7 @@ import lightning as L # lightning has tons of cool tools that make neural networ
 
 # batch size, sequence length, input size
 
-class Decoder(nn.Module):
+class Decoder(L.LightningModule):
     def __init__(self, input_size, embedding_size, hidden_size, output_size):
         super().__init__()
         self.input_size = input_size
@@ -17,6 +17,8 @@ class Decoder(nn.Module):
         self.rnn = nn.LSTM(embedding_size, hidden_size, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
         self.loss = nn.CrossEntropyLoss()
+        print("from decoder init")
+        print("adham")
 
     def forward(self, x, h0, c0):
         x = self.embedding(x)
@@ -26,4 +28,19 @@ class Decoder(nn.Module):
         # cn is the cell state of the last timestep
         out = self.fc(h)
         return out
-    
+
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        print("from decoder training step")
+        print(x.shape)
+        h0 = torch.zeros(1, x.shape[0], self.hidden_size)
+        c0 = torch.zeros(1, x.shape[0], self.hidden_size)
+        y_hat = self.forward(x, h0, c0)
+        # y_hat is the output of the model of shape (batch_size, sequence_length, output_size)
+        # y is the target of shape (batch_size, sequence_length)
+        # y contains the index of the correct word in the vocabulary
+        loss = self.loss(y_hat.view(-1, self.output_size), y.view(-1))
+        return loss
+
+    def configure_optimizers(self):
+        return Adam(self.parameters(), lr=0.001)

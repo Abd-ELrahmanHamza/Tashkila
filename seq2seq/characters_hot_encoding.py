@@ -1,23 +1,18 @@
 import numpy as np
-import pyarabic.araby as araby
-import re
+import torch
 
-regex = re.compile(r'.')
-
-# Define the vocabulary of characters
-vocab = regex.findall(araby.LETTERS)
+from constants import *
 
 # add start and end of sequence characters and space
-vocab.append('<s>')
-vocab.append(' ')
-vocab.append('</s>')
+
+vocab: list[str] = ARABIC_LETTERS + [' '] + ARABIC_PUNCTUATIONS + ['.'] + ENGLISH_PUNCTUATIONS + ['\u200f'] + ['']
 
 # characters to index and vice versa
 char2idx = {u:i for i, u in enumerate(vocab)}
 idx2char = np.array(vocab)
 
 # create one hot encoding for each character
-hot_encoding = np.eye(len(vocab), dtype='int32')
+hot_encoding = torch.eye(len(vocab))
 
 if __name__ == '__main__':
     print("Vocab:", vocab)
