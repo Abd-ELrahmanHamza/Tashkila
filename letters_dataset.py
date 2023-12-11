@@ -55,10 +55,9 @@ class LettersDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', verbose=False):
+    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', device=torch.device('cpu'), verbose=False):
         """
             This method is used to initialize the class.
-
             :param words_dataset: The dataset of words.
         """
         self.char_encoder = TextEncoder(DS_ARABIC_LETTERS)
@@ -106,8 +105,8 @@ class LettersDataset(Dataset):
         self.encoded_Y = [y[:w] for y in self.encoded_Y]
 
         # print(self.encoded_X[0])
-        self.encoded_X = torch.tensor(self.encoded_X)
-        self.encoded_Y = torch.tensor(self.encoded_Y)
+        self.encoded_X = torch.tensor(self.encoded_X, device=device)
+        self.encoded_Y = torch.tensor(self.encoded_Y, device=device)
 
     def __getitem__(self, index):
         """
@@ -132,6 +131,7 @@ class LettersDataset(Dataset):
 
 
 if __name__ == '__main__':
+    read_data(input_file, output_file, verbose=True)
     dataset = LettersDataset()
     print(dataset[0])
     print("returned successfully without errors")
