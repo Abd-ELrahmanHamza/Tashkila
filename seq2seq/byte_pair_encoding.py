@@ -4,9 +4,9 @@ from tokenizers.trainers import BpeTrainer
 
 
 class Byte_Pair_Encoding:
-    def __init__(self, max_length=100):
+    def __init__(self, max_length=100,padding_token="[PAD]"):
         self.tokenizer = Tokenizer(BPE())
-        self.tokenizer.enable_padding(length=max_length, direction="left")
+        self.tokenizer.enable_padding(length=max_length, direction="left",pad_token=padding_token)
         self.trainer = BpeTrainer(special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
 
     def train(self, path: str):

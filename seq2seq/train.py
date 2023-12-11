@@ -6,24 +6,20 @@ from torch.utils.data import TensorDataset, DataLoader  # these are needed for t
 
 from encoder import Encoder
 from decoder import Decoder
-from byte_pair_encoding import BPE
-from seq2seq import Seq2Seq
+from seq2seq.byte_pair_encoding import BPE
+from seq2seq.seq2seq import Seq2Seq
 from words_hot_enconding import create_word_index, one_hot_encode
 from characters_hot_encoding import hot_encoding, char2idx, idx2char, vocab
-
+from seq2seq.tokenize import tokenize
 
 def preprocess_data():
-    with open('clean_out/merged.txt', 'r') as f:
-        corpus = f.readlines()
-        # 1- Perform byte pair encoding
-        # 2- Create the vocabulary
-        bpe = BPE()
-        vocab = bpe.byte_pair_encoding(corpus, len(corpus))
-        # 3- Create the one hot encoding for each word
-        word_index = create_word_index(corpus)
-        word_hot_encoding = [one_hot_encode(word, word_index) for sentence in corpus for word in sentence.split()]
-        decoder_inputs = [[char for char in word] for sentence in corpus for word in sentence]
-        return word_hot_encoding,decoder_inputs
+    expected_output, char_input, word_input = tokenize()
+    word_index = create_word_index(word_input)
+    word_hot_encoding = {word:one_hot_encode(word, word_index) for word in word_input}
+    #TODO: need to perform character hot encoding
+    character_hot_encoding = None
+    # decoder_inputs = [[char for char in word] for sentence in corpus for word in sentence]
+    return expected_output, word_hot_encoding, character_hot_encoding, char_input, word_input
 
 if __name__ == '__main__':
     # Preprocess the data
