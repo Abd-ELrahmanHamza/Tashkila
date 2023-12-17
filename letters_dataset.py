@@ -115,11 +115,8 @@ class LettersDataset(Dataset):
             :param index: The index of the item to get.
             :return: The item at the given index.
         """
-        sample = {
-            'input': self.encoded_X[index],
-            'output': self.encoded_Y[index]
-        }
-        return sample
+
+        return self.encoded_X[index], self.encoded_Y[index]
 
     def __len__(self):
         """
