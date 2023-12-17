@@ -9,7 +9,7 @@ from decoder import Decoder
 from byte_pair_encoding import BPE
 from seq2seq import Seq2Seq
 from words_hot_enconding import create_word_index, one_hot_encode
-from characters_hot_encoding import hot_encoding, char2idx, idx2char, vocab
+from characters_hot_encoding import char2idx, idx2char, vocab
 
 
 def preprocess_data():
@@ -23,12 +23,13 @@ def preprocess_data():
         word_index = create_word_index(corpus)
         word_hot_encoding = [one_hot_encode(word, word_index) for sentence in corpus for word in sentence.split()]
         decoder_inputs = [[char for char in word] for sentence in corpus for word in sentence]
-        return word_hot_encoding,decoder_inputs
+        return word_hot_encoding, decoder_inputs
+
 
 if __name__ == '__main__':
     # Preprocess the data
     encoder_inputs, decoder_inputs = preprocess_data()
-    decoder_targets = None # TODO: PROBLEM==== HOW TO GET THE TASHKIL FOR INPUT WORDS
+    decoder_targets = None  # TODO: PROBLEM==== HOW TO GET THE TASHKIL FOR INPUT WORDS
     # 8- Define the hyperparameters
     ENCODER_INPUT_DIM = None  # TODO: replace None with the correct value
     DECODER_INPUT_DIM = None  # TODO: replace None with the correct value
@@ -53,3 +54,9 @@ if __name__ == '__main__':
 
     # Train the model
     trainer.fit(model, train_dataloaders=train_loader)
+
+
+
+# adham ali abdelaal
+    
+# 1 4 2, 1 4 3

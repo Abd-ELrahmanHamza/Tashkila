@@ -1,24 +1,18 @@
-import os
-import csv
 import torch
-from torch.utils.data import TensorDataset, DataLoader  # these are needed for the training data
-from characters_hot_encoding import hot_encoding, char2idx
-from harakat_hot_encoding import hot_encoding as harakat_hot_encoding, harakat2idx
+from harakat_hot_encoding import harakat2idx
+from characters_hot_encoding import char2idx
 
-# read x and y from the files
-# x from clean_out/X.csv
-# y from clean_out/y.csv
-XTRAIN_PATH = f'{os.path.dirname(os.path.abspath(__file__))}/../clean_out/X.csv'
-YTRAIN_PATH = f'{os.path.dirname(os.path.abspath(__file__))}/../clean_out/y.csv'
+XTRAIN_PATH = f'../clean_out/X.csv'
+YTRAIN_PATH = f'../clean_out/y.csv'
 
 
-def read_data(verbose=False):
+def read_data(input_path,output_path,verbose=False):
     X = []
     Y = []
     # read csv files
-    with open(XTRAIN_PATH, 'r', encoding="utf8") as f:
+    with open(input_path, 'r', encoding="utf8") as f:
         X = f.readlines()
-    with open(YTRAIN_PATH, 'r', encoding="utf8") as f:
+    with open(output_path, 'r', encoding="utf8") as f:
         Y = f.readlines()
 
     # remove the \n from the end of each line
@@ -40,7 +34,7 @@ def read_data(verbose=False):
 
     return X, Y
 
-X, Y = read_data(verbose=False)
+X, Y = read_data(XTRAIN_PATH, YTRAIN_PATH, verbose=False)
 
 x_new = [char2idx[x] for x in X]
 y_new = [harakat2idx[y] for y in Y]
@@ -62,15 +56,9 @@ x_new = torch.tensor(x_new).view(-1, num)
 y_new = torch.tensor(y_new).view(-1, num)
 
 # convert to hot encoding
-x_train = hot_encoding[x_new]
+x_train = x_new
 
 y_train = y_new
 
 print(x_train.shape)
 print(y_train.shape)
-
-# create a tensor dataset
-dataset_tensor = TensorDataset(x_train, y_train)
-
-# create a data loader
-data_loader = DataLoader(dataset_tensor, batch_size=1000, shuffle=True)
