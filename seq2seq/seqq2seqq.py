@@ -19,6 +19,7 @@ from train_collections import DS_ARABIC_LETTERS, DS_HARAKAT
 # %%
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 # %% [markdown]
 # ## Encoder
 
@@ -97,7 +98,7 @@ class Seq2Seq(nn.Module):
 
 
 decoder_dim_vocab = len(DS_ARABIC_LETTERS)
-decoder_dim_out = len(DS_HARAKAT)  # harakat
+decoder_dim_out = len(DS_HARAKAT) + 2  # harakat
 
 # encoder_dim_vocab = #tokens
 
@@ -107,8 +108,9 @@ batch_size = 64
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # %%
-decodor_dataset = LettersDataset(device=device)
-encoder_dataset = WordsDataset(device=device)
+decodor_dataset = LettersDataset(
+    "../clean_out/X.csv", "../clean_out/Y.csv", device=device)
+encoder_dataset = WordsDataset("../clean_out/X_words.txt", device=device)
 
 
 # %%
@@ -143,4 +145,77 @@ sample = next(iter(seq2seq_loader))
 print(sample[0].shape)
 print(sample[1].shape)
 print(sample[2].shape)
+# %%
+enc_model = Encoder(
+    encoder_dataset.bpe.tokenizer.get_vocab_size(), hidden_dim=256)
+
+dec_model = Decoder(decoder_dim_vocab, embedding_size=64,
+                    hidden_size=256, output_size=decoder_dim_out, device=device.type)
+
+
+model = Seq2Seq(encoder=enc_model, decoder=dec_model).to(device)
+print(model)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
+loss_fn = nn.CrossEntropyLoss()
+num_batches = len(seq2seq_loader)
+print("Number of batches:", num_batches)
+best_model = None
+best_loss = np.inf
+for epoch in range(n_epochs):
+    model.train()
+    for i, (X_encoder, X_decoder, Y_batch) in enumerate(seq2seq_loader):
+        y_pred = ''
+        y_pred = model(X_encoder, X_decoder)
+        y_pred = y_pred.transpose(1, 2)
+        # print(y_pred.shape)
+        # print(y_batch.shape)
+        loss = loss_fn(y_pred, Y_batch)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if i % 100 == 0:
+            print("Epoch %d, batch %d: Loss = %.4f" % (epoch, i, loss))
+
+    # Validation
+    model.eval()
+    loss = 0
+    with torch.no_grad():
+        for (X_encoder, X_decoder, Y_batch) in seq2seq_loader:
+            y_pred = model(X_encoder, X_decoder)
+            y_pred = y_pred.transpose(1, 2)
+
+            loss += loss_fn(y_pred, Y_batch)
+        if loss < best_loss:
+            best_loss = loss
+            best_model = model.state_dict()
+        print("Epoch %d: Cross-entropy: %.4f" % (epoch, loss))
+
+# %%
+
+val_dataset = LettersDataset(
+    'clean_out/X_val.csv', 'clean_out/y_val.csv', device=device)
+val_words_dataset = WordsDataset('clean_out/X_words_val.txt')
+val_merged = CombinedDataset(val_words_dataset, val_dataset)
+seq2seq_loader = DataLoader(merged_set, shuffle=True, batch_size=batch_size)
+
+# evaluaate accuracy on validation set
+
+
+model.eval()
+correct = 0
+total = 0
+
+with torch.no_grad():
+    for (X_encoder, X_decoder, Y_batch) in seq2seq_loader:
+        is_padding = X_decoder == val_dataset.char_encoder.get_pad_token()
+        y_pred = model(X_encoder, X_decoder)
+        y_pred = y_pred.transpose(1, 2)
+        _, predicted = torch.max(y_pred.data, 1)
+        # Count only non-padding characters
+        total += torch.sum(~is_padding).item()
+
+        # Count correct predictions
+        correct += torch.sum((predicted == Y_batch) & (~is_padding)).item()
+print("Accuracy: %.2f%%" % (100 * correct / total))
+
 # %%

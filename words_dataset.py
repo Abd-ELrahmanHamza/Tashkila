@@ -43,7 +43,7 @@ class WordsDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X_words.txt', device=torch.device('cpu'), max_sentence_length=400, verbose=False):
+    def __init__(self, input_data_file='clean_out/X_words.txt', device=torch.device('cpu'), max_sentence_length=400,tokenizer, verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
