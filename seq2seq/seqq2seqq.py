@@ -1,5 +1,6 @@
 # %%
 from letters_dataset import LettersDataset
+from seq2seq.byte_pair_encoding import Byte_Pair_Encoding
 from words_dataset import WordsDataset
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torch
@@ -108,9 +109,14 @@ batch_size = 64
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # %%
+
+bpe = Byte_Pair_Encoding(450)
+bpe.train("./clean_out/merged.txt")
+
 decodor_dataset = LettersDataset(
     "../clean_out/X.csv", "../clean_out/Y.csv", device=device)
-encoder_dataset = WordsDataset("../clean_out/X_words.txt", device=device)
+encoder_dataset = WordsDataset(
+    "../clean_out/X_words.txt", device=device, tokenizer=bpe)
 
 
 # %%
@@ -194,7 +200,8 @@ for epoch in range(n_epochs):
 
 val_dataset = LettersDataset(
     'clean_out/X_val.csv', 'clean_out/y_val.csv', device=device)
-val_words_dataset = WordsDataset('clean_out/X_words_val.txt')
+val_words_dataset = WordsDataset(
+    'clean_out/X_words_val.txt', device=device, tokenizer=bpe)
 val_merged = CombinedDataset(val_words_dataset, val_dataset)
 seq2seq_loader = DataLoader(merged_set, shuffle=True, batch_size=batch_size)
 

@@ -43,14 +43,13 @@ class WordsDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X_words.txt', device=torch.device('cpu'), max_sentence_length=400,tokenizer, verbose=False):
+    def __init__(self, input_data_file='clean_out/X_words.txt', device=torch.device('cpu'), max_sentence_length=400, tokenizer=Byte_Pair_Encoding(400), verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
         """
-        self.bpe = Byte_Pair_Encoding(max_sentence_length)
-        self.bpe.train("./clean_out/merged.txt")
 
+        self.bpe = tokenizer
         # returns [['ahmed','atta'][''][]]
         X = read_data_words(input_data_file,  verbose=verbose)
         self.X_tokenized = [self.bpe.encode(xx) for xx in X]
@@ -113,7 +112,10 @@ class WordsDataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = WordsDataset()
+    bpe = Byte_Pair_Encoding(450)
+    bpe.train("./clean_out/merged.txt")
+
+    dataset = WordsDataset(tokenizer=bpe, verbose=True)
     print(dataset[0])
     print("returned successfully without errors")
     print(len(dataset))
@@ -123,4 +125,3 @@ if __name__ == '__main__':
     sample = next(iter(data_loader))
     print(sample.shape)
     print(sample[:4])
-
