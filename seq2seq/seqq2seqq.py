@@ -104,7 +104,7 @@ decoder_dim_out = len(DS_HARAKAT) + 2  # harakat
 # encoder_dim_vocab = #tokens
 
 embedding_dim = 64
-n_epochs = 3
+n_epochs = 5
 batch_size = 64
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -112,11 +112,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 bpe = Byte_Pair_Encoding(450)
 bpe.train("./clean_out/merged.txt")
-
+# %%
 decodor_dataset = LettersDataset(
-    "../clean_out/X.csv", "../clean_out/Y.csv", device=device)
+    "./clean_out/X.csv", "./clean_out/Y.csv", device=device)
 encoder_dataset = WordsDataset(
-    "../clean_out/X_words.txt", device=device, tokenizer=bpe)
+    "./clean_out/X_words.txt", device=device, tokenizer=bpe)
 
 
 # %%
@@ -153,10 +153,10 @@ print(sample[1].shape)
 print(sample[2].shape)
 # %%
 enc_model = Encoder(
-    encoder_dataset.bpe.tokenizer.get_vocab_size(), hidden_dim=256)
+    encoder_dataset.bpe.tokenizer.get_vocab_size(), hidden_dim=128, num_layers=1, dropout_probability=0)
 
-dec_model = Decoder(decoder_dim_vocab, embedding_size=64,
-                    hidden_size=256, output_size=decoder_dim_out, device=device.type)
+dec_model = Decoder(decoder_dim_vocab, embedding_size=128,
+                    hidden_size=128, output_size=decoder_dim_out, device=device.type)
 
 
 model = Seq2Seq(encoder=enc_model, decoder=dec_model).to(device)
@@ -214,7 +214,7 @@ total = 0
 
 with torch.no_grad():
     for (X_encoder, X_decoder, Y_batch) in seq2seq_loader:
-        is_padding = X_decoder == val_dataset.char_encoder.get_pad_token()
+        is_padding = (X_decoder == val_dataset.char_encoder.get_pad_token())
         y_pred = model(X_encoder, X_decoder)
         y_pred = y_pred.transpose(1, 2)
         _, predicted = torch.max(y_pred.data, 1)
