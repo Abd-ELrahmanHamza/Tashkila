@@ -1,23 +1,42 @@
-from seq2seq.byte_pair_encoding import Byte_Pair_Encoding
+from byte_pair_encoding import Byte_Pair_Encoding
 from letters_dataset import read_data, find_width_99_percentile
+
 
 def tokenize():
     input, expected_output = read_data("./clean_out/X.csv", "./clean_out/Y.csv", True)
-    max_word_len = 0
-    for word in input:
-        if len(word) > max_word_len:
-            max_word_len = len(word)
-    Padding_token = "P" * max_word_len
 
     # Find the max sentence length
-    max_sentence_length = find_width_99_percentile(input)
+    max_sentence_length = 300
 
-    bpe = Byte_Pair_Encoding(max_sentence_length,Padding_token)
+    bpe = Byte_Pair_Encoding(max_sentence_length)
     bpe.train("./clean_out/merged.txt")
 
     char_input = input.copy()
     tokenized_word_input = input.copy()
     for i in range(len(input)):
-        word = ''.join(input[i])+"P"*(max_word_len-len(input[i]))
+        word = ''.join(input[i])
         tokenized_word_input[i] = bpe.encode(word)
     return expected_output, char_input, tokenized_word_input
+
+
+# def tokenize_one_word():
+#     input, expected_output = read_data("./clean_out/X.csv", "./clean_out/Y.csv", True)
+#     print(input[0])
+#     # Find the max sentence length
+#     max_sentence_length = find_width_99_percentile(input)
+#
+#     bpe = Byte_Pair_Encoding(max_sentence_length)
+#     bpe.train("./clean_out/merged.txt")
+#
+#     char_input = input.copy()
+#     tokenized_word_input = input.copy()
+#     # print("Tokenized word input: ", bpe.encode("يلعب عطا كرة القدم"))
+#     print("vocab size: ", bpe.vocab_size())
+#     return expected_output, char_input, tokenized_word_input
+
+
+if __name__ == '__main__':
+    expected_output, char_input, tokenized_word_input = tokenize()
+    # print("Expected output: ", expected_output)
+    # print("Char input: ", char_input)
+    print("Tokenized word input: ", tokenized_word_input[0])
