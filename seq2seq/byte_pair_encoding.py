@@ -12,6 +12,7 @@ class Byte_Pair_Encoding:
             special_tokens=["[UNK]", "[CLS]", "[SEP]", "[PAD]", "[MASK]"])
 
     def train(self, path: str):
+        print("training tokenizer...")
         self.tokenizer.train(files=[path], trainer=self.trainer)
 
     def encode(self, text: str):

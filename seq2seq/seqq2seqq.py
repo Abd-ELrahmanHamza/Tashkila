@@ -14,6 +14,8 @@ import time
 
 from train_collections import DS_ARABIC_LETTERS, DS_HARAKAT
 
+print("all imports done")
+
 # %% [markdown]
 # ## Define the device
 
@@ -50,7 +52,8 @@ class Encoder(nn.Module):
         # hidden = [n layers * n directions, batch size, hid dim]
         # cell = [n layers * n directions, batch size, hid dim]
         # outputs are always from the top hidden layer
-        return hidden, cell
+        return outputs,(hidden, cell)
+
 
 # %% [markdown]
 # ## Decoder
@@ -61,27 +64,34 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, input_size, embedding_size, hidden_size, output_size, device='cuda'):
         super().__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.device = device
         self.embedding = nn.Embedding(input_size, embedding_size)
-        self.lstm = nn.LSTM(embedding_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(embedding_size+hidden_size, hidden_size, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
 
-    def forward(self, x, h0, c0):
+    def forward(self, x, context, h0, c0):
         # print("from decoder forward")
         # print(x.shape)
         embeddings = self.embedding(x)
         # print("from decoder forward after embedding")
         # print(embeddings.shape)
-        outs, _ = self.lstm(embeddings, (h0, c0))
+        lstm_input = torch.cat((embeddings, context), dim=2)
+        outs, (h1,c1) = self.lstm(lstm_input, (h0, c0))
         # h is the output of the RNN
         # hn is the hidden state of the last timestep
         # cn is the cell state of the last timestep
         scores = self.fc(outs)
-        return scores
+        return scores,(h1,c1)
+
 
 # %%
 # Seq2Seq
 
 # %%
+print("seq2seq")
 
 
 class Seq2Seq(nn.Module):
@@ -91,10 +101,50 @@ class Seq2Seq(nn.Module):
         self.decoder = decoder
 
     def forward(self, encoder_inputs, decoder_inputs):
-        encoder_hidden, encoder_cell = self.encoder(encoder_inputs)
+        encoder_output, (encoder_hidden, encoder_cell) = self.encoder(encoder_inputs)
         decoder_output = self.decoder(
             decoder_inputs, encoder_hidden, encoder_cell)
         return decoder_output
+
+
+# %%Attention
+class AttentionSeq2Seq(nn.Module):
+    def __init__(self, encoder, decoder):
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.softmax = nn.Softmax(dim=2)
+
+    def forward(self, encoder_inputs, decoder_inputs):
+        encoder_output, (encoder_hidden, encoder_cell) = self.encoder(encoder_inputs)
+        # print("hello")
+        # add attention
+        decoder_hidden, decoder_cell = encoder_hidden, encoder_cell
+        sequence_length = decoder_inputs.size(1)
+        batch_size = decoder_inputs.size(0)
+        # final output of the decoder
+        # batch size * sequence length * output size
+        final_output = torch.zeros(
+            batch_size, sequence_length, self.decoder.output_size, device=device)
+        for i in range(sequence_length):
+            attention_weights = self.calculate_attention_weights(encoder_output, decoder_hidden)
+            attention_vectors = attention_weights * encoder_output
+            context_vector = torch.sum(attention_vectors, dim=1, keepdim=True)
+            scores ,(decoder_hidden, decoder_cell) = self.decoder(decoder_inputs[:, i:i+1], context_vector, decoder_hidden, decoder_cell)
+            final_output[:, i:i+1, :] = scores
+        return final_output
+
+    def calculate_attention_weights(self, encoder_output, decoder_hidden):
+        # encoder output: [batch size, seq len, hidden size]
+        # decoder hidden: [1, batch size, hidden size]
+        # attention weights: [batch size, seq len, 1]
+        decoder_hidden_permuted = decoder_hidden.permute(1, 2, 0)
+        attention_weights = torch.bmm(encoder_output, decoder_hidden_permuted)
+        attention_weights = self.softmax(attention_weights)
+        return attention_weights
+
+
+
 # %%
 
 
@@ -111,12 +161,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # %%
 
 bpe = Byte_Pair_Encoding(450)
-bpe.train("./clean_out/merged.txt")
+bpe.train("../clean_out/merged.txt")
 # %%
 decodor_dataset = LettersDataset(
-    "./clean_out/X.csv", "./clean_out/Y.csv", device=device)
+    "../clean_out/X.csv", "../clean_out/Y.csv", device=device)
 encoder_dataset = WordsDataset(
-    "./clean_out/X_words.txt", device=device, tokenizer=bpe)
+    "../clean_out/X_words.txt", device=device, tokenizer=bpe)
+print("adham")
 
 
 # %%
@@ -159,7 +210,7 @@ dec_model = Decoder(decoder_dim_vocab, embedding_size=128,
                     hidden_size=128, output_size=decoder_dim_out, device=device.type)
 
 
-model = Seq2Seq(encoder=enc_model, decoder=dec_model).to(device)
+model = AttentionSeq2Seq(encoder=enc_model, decoder=dec_model).to(device)
 print(model)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 loss_fn = nn.CrossEntropyLoss()
@@ -199,9 +250,9 @@ for epoch in range(n_epochs):
 # %%
 
 val_dataset = LettersDataset(
-    'clean_out/X_val.csv', 'clean_out/y_val.csv', device=device)
+    '../clean_out/X_val.csv', '../clean_out/y_val.csv', device=device)
 val_words_dataset = WordsDataset(
-    'clean_out/X_words_val.txt', device=device, tokenizer=bpe)
+    '../clean_out/X_words_val.txt', device=device, tokenizer=bpe)
 val_merged = CombinedDataset(val_words_dataset, val_dataset)
 seq2seq_loader = DataLoader(merged_set, shuffle=True, batch_size=batch_size)
 
@@ -225,4 +276,6 @@ with torch.no_grad():
         correct += torch.sum((predicted == Y_batch) & (~is_padding)).item()
 print("Accuracy: %.2f%%" % (100 * correct / total))
 
+# %%
+print("adham")
 # %%
