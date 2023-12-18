@@ -1,9 +1,10 @@
 from byte_pair_encoding import Byte_Pair_Encoding
-from letters_dataset import read_data, find_width_99_percentile
+from words_dataset import read_data, find_width_99_percentile
 
 
 def tokenize():
-    input, expected_output = read_data("../clean_out/X.csv", "../clean_out/Y.csv", True)
+    input, expected_output = read_data(
+        "../clean_out/X.csv", "../clean_out/Y.csv", True)
 
     # Find the max sentence length
     max_sentence_length = 300

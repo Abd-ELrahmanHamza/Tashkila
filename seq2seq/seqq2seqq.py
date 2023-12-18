@@ -1,0 +1,146 @@
+# %%
+from letters_dataset import LettersDataset
+from words_dataset import WordsDataset
+from torch.utils.data import Dataset, DataLoader, ConcatDataset
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+
+import random
+import math
+import time
+
+from train_collections import DS_ARABIC_LETTERS, DS_HARAKAT
+
+# %% [markdown]
+# ## Define the device
+
+# %%
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+# %% [markdown]
+# ## Encoder
+
+# %%
+
+
+class Encoder(nn.Module):
+    def __init__(self, input_dim, embedding_dim=128, hidden_dim=256, num_layers=1, dropout_probability=0.1):
+        super().__init__()
+        # TODO: replace with one hot encoding
+        self.embedding = nn.Embedding(input_dim, embedding_dim)
+        self.lstm_layer = nn.LSTM(
+            embedding_dim, hidden_dim, num_layers, dropout=dropout_probability, batch_first=True)
+
+        # Dropout layer to prevent over fitting (regularization)
+        # it randomly zeroes some of the elements of the input tensor with probability p using samples from a Bernoulli distribution.
+        self.dropout = nn.Dropout(dropout_probability)
+
+    def forward(self, inputs):
+        # inputs = [inputs len, batch size]
+        embeddings = self.dropout(self.embedding(inputs))
+
+        # embedded = [inputs len, batch size, emb dim]
+        outputs, (hidden, cell) = self.lstm_layer(embeddings)
+
+        # outputs = [inputs len, batch size, hid dim * n directions]
+        # hidden = [n layers * n directions, batch size, hid dim]
+        # cell = [n layers * n directions, batch size, hid dim]
+        # outputs are always from the top hidden layer
+        return hidden, cell
+
+# %% [markdown]
+# ## Decoder
+
+# %%
+
+
+class Decoder(nn.Module):
+    def __init__(self, input_size, embedding_size, hidden_size, output_size, device='cuda'):
+        super().__init__()
+        self.embedding = nn.Embedding(input_size, embedding_size)
+        self.lstm = nn.LSTM(embedding_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+
+    def forward(self, x, h0, c0):
+        # print("from decoder forward")
+        # print(x.shape)
+        embeddings = self.embedding(x)
+        # print("from decoder forward after embedding")
+        # print(embeddings.shape)
+        outs, _ = self.lstm(embeddings, (h0, c0))
+        # h is the output of the RNN
+        # hn is the hidden state of the last timestep
+        # cn is the cell state of the last timestep
+        scores = self.fc(outs)
+        return scores
+
+# %%
+# Seq2Seq
+
+# %%
+
+
+class Seq2Seq(nn.Module):
+    def __init__(self, encoder, decoder):
+        super().__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, encoder_inputs, decoder_inputs):
+        encoder_hidden, encoder_cell = self.encoder(encoder_inputs)
+        decoder_output = self.decoder(
+            decoder_inputs, encoder_hidden, encoder_cell)
+        return decoder_output
+# %%
+
+
+decoder_dim_vocab = len(DS_ARABIC_LETTERS)
+decoder_dim_out = len(DS_HARAKAT)  # harakat
+
+# encoder_dim_vocab = #tokens
+
+embedding_dim = 64
+n_epochs = 3
+batch_size = 64
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# %%
+decodor_dataset = LettersDataset(device=device)
+encoder_dataset = WordsDataset(device=device)
+
+
+# %%
+
+class CombinedDataset(Dataset):
+    def __init__(self, words_dataset, letters_dataset):
+        self.words_dataset = words_dataset
+        self.letters_dataset = letters_dataset
+
+        # Ensure both datasets are of the same size
+        assert len(words_dataset) == len(
+            letters_dataset), "Datasets must be of the same size"
+
+    def __len__(self):
+        return len(self.words_dataset)
+
+    def __getitem__(self, idx):
+        word = self.words_dataset[idx]
+        letters, letter_tashkeel = self.letters_dataset[idx]
+
+        # Combine or process the features as needed for your model
+        # This can vary depending on how your seq2seq model is set up
+
+        return word, letters, letter_tashkeel
+
+
+merged_set = CombinedDataset(encoder_dataset, decodor_dataset)
+
+seq2seq_loader = DataLoader(merged_set, shuffle=True, batch_size=batch_size)
+
+sample = next(iter(seq2seq_loader))
+print(sample[0].shape)
+print(sample[1].shape)
+print(sample[2].shape)
+# %%
