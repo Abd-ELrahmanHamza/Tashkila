@@ -214,7 +214,7 @@ total = 0
 
 with torch.no_grad():
     for (X_encoder, X_decoder, Y_batch) in seq2seq_loader:
-        is_padding = (X_decoder == val_dataset.char_encoder.get_pad_token())
+        is_padding = (X_decoder == val_dataset.char_encoder.get_pad_id())
         y_pred = model(X_encoder, X_decoder)
         y_pred = y_pred.transpose(1, 2)
         _, predicted = torch.max(y_pred.data, 1)

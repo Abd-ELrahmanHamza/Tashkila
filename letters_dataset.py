@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from text_encoder import TextEncoder
 import numpy as np
-from train_collections import DS_ARABIC_LETTERS, DS_HARAKAT
+from train_collections import *
 input_file = 'clean_out/X.csv'
 output_file = 'clean_out/Y.csv'
 input_val = 'clean_out/X_val.csv'
@@ -55,13 +55,15 @@ class LettersDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', device=torch.device('cpu'), verbose=False):
+    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
         """
-        self.char_encoder = TextEncoder(DS_ARABIC_LETTERS)
-        self.harakat_encoder = TextEncoder(DS_HARAKAT)
+        # input encoder
+        self.char_encoder = TextEncoder(DS_ARABIC_LETTERS, special_tokens)
+        # output encoder
+        self.harakat_encoder = TextEncoder(DS_HARAKAT, special_tokens)
         X, Y = read_data(input_data_file, output_data_file, verbose=verbose)
 
         self.encoded_X = []
@@ -94,11 +96,11 @@ class LettersDataset(Dataset):
         w = find_width_99_percentile(self.encoded_X)
         print(f'w = {w}')
         # pad the data
-        self.encoded_X = [x + [self.char_encoder.get_pad_token()] * (w - len(x))
+        self.encoded_X = [x + [self.char_encoder.get_pad_id()] * (w - len(x))
                           for x in self.encoded_X]
 
         self.encoded_Y = [
-            y + [self.harakat_encoder.get_pad_token()] * (w - len(y)) for y in self.encoded_Y]
+            y + [self.harakat_encoder.get_pad_id()] * (w - len(y)) for y in self.encoded_Y]
 
         # clip the data to w
         self.encoded_X = [x[:w] for x in self.encoded_X]
@@ -125,6 +127,12 @@ class LettersDataset(Dataset):
             :return: The length of the dataset.
         """
         return len(self.encoded_X)
+
+    def get_input_vocab_size(self):
+        return self.char_encoder.get_vocab_size()
+
+    def get_output_vocab_size(self):
+        return self.harakat_encoder.get_vocab_size()
 
 
 if __name__ == '__main__':

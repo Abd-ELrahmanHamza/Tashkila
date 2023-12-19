@@ -1,29 +1,43 @@
 
 from constants import ARABIC_LETTERS
+from train_collections import *
 
 
 class TextEncoder:
 
-    def __init__(self, vocab, pad_token='<pad>', unk_token='<unk>'):
+    def __init__(self, vocab, spectial_tokens=[PAD_TOKEN, UNK_TOKEN]):
         self.vocab = vocab
-        self.vocab_size = len(vocab)
-        self.pad_token = pad_token
-        self.unk_token = unk_token
+        self.vocab_size = len(vocab) + len(spectial_tokens)
+
+        self.special_tokens = spectial_tokens
+
         self.word2idx = {word: i for i, word in enumerate(vocab)}
-        self.word2idx[unk_token] = len(self.word2idx)
-        self.word2idx[pad_token] = len(self.word2idx)
+
+        for token in self.special_tokens:
+            self.word2idx[token] = len(self.word2idx)
+
         self.idx2word = {i: word for i, word in enumerate(vocab)}
-        self.idx2word[len(self.idx2word)] = unk_token
-        self.idx2word[len(self.idx2word)] = pad_token
+
+        for token in self.special_tokens:
+            self.idx2word[len(self.idx2word)] = token
 
     def encode(self, seq):
-        return [self.word2idx.get(word, self.word2idx[self.unk_token]) for word in seq]
+        return [self.word2idx.get(word, self.word2idx[UNK_TOKEN]) for word in seq]
 
     def decode(self, idxs):
         return ''.join([self.idx2word.get(idx, '$') for idx in idxs])
 
-    def get_pad_token(self):
-        return self.word2idx[self.pad_token]
+    def get_pad_id(self):
+        return self.get_id_by_token(PAD_TOKEN)
+
+    def get_id_by_token(self, token):
+        return self.word2idx[token]
+
+    def get_vocab_size(self):
+        return self.vocab_size
+
+    def get_vocab(self):
+        return self.vocab
 
 
 # if main script
