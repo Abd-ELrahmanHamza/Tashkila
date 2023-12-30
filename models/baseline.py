@@ -57,4 +57,4 @@ class BaseLineModel(nn.Module):
 
         output = {"diacritics": predictions}
 
-        return output
+        return predictions
