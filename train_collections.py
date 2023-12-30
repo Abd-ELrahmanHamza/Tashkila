@@ -1,9 +1,23 @@
 from constants import *
+import pickle
+
+PAD_TOKEN = '<pad>'
+UNK_TOKEN = '<unk>'
+START_TOKEN = '<s>'
+END_TOKEN = '</s>'
+
+
+def read_pickle_file(filename):
+    with open(filename, 'rb') as f:
+        data = pickle.load(f)
+    # print(data)
+    return data
+
 
 DS_ARABIC_LETTERS: list[str] = ARABIC_LETTERS + \
-    [' '] + ARABIC_PUNCTUATIONS + ['.']
+    [' ', '،', '-']
 
-NON_HARAKA = '$'
+NON_HARAKA = ''
 
 DS_HARAKAT = [
     FATHA,
@@ -22,8 +36,4 @@ DS_HARAKAT = [
     SHADDA + KASRATAN,
     NON_HARAKA
 ]
-
-PAD_TOKEN = '<pad>'
-UNK_TOKEN = '<unk>'
-START_TOKEN = '<s>'
-END_TOKEN = '</s>'
+harakat2id = read_pickle_file('./Delivery/diacritic2id.pickle')

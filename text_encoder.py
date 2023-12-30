@@ -1,4 +1,5 @@
 
+from tkinter import NONE
 from constants import ARABIC_LETTERS
 from train_collections import *
 
@@ -25,7 +26,13 @@ class TextEncoder:
         return [self.word2idx.get(word, self.word2idx[UNK_TOKEN]) for word in seq]
 
     def decode(self, idxs):
-        return ''.join([self.idx2word.get(idx, '$') for idx in idxs])
+        return ''.join([self.idx2word.get(idx, UNK_TOKEN) for idx in idxs])
+
+    def is_arabic_letter(self, id):
+        letter = self.idx2word.get(id, UNK_TOKEN)
+        if letter in ARABIC_LETTERS:
+            return letter
+        return None
 
     def get_pad_id(self):
         return self.get_id_by_token(PAD_TOKEN)
@@ -43,3 +50,5 @@ class TextEncoder:
 # if main script
 if __name__ == '__main__':
     enc = TextEncoder(ARABIC_LETTERS)
+    l = enc.is_arabic_letter(1)
+    print(l)

@@ -7,6 +7,7 @@ from uu import encode
 from numpy import mean
 import torch
 from torch.utils.data import Dataset, DataLoader
+from out_encoder import OutputEncoder
 from text_encoder import TextEncoder
 import numpy as np
 from train_collections import *
@@ -55,7 +56,7 @@ class LettersDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
+    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', val_mode=False, device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
@@ -63,7 +64,7 @@ class LettersDataset(Dataset):
         # input encoder
         self.char_encoder = TextEncoder(DS_ARABIC_LETTERS, special_tokens)
         # output encoder
-        self.harakat_encoder = TextEncoder(DS_HARAKAT, special_tokens)
+        self.harakat_encoder = OutputEncoder()
         X, Y = read_data(input_data_file, output_data_file, verbose=verbose)
 
         self.encoded_X = []
@@ -93,7 +94,12 @@ class LettersDataset(Dataset):
                 f'percent = {num_sent_/all_sent_count}')
 
         # choose fixed length that perseves 99% of the data
-        w = find_width_99_percentile(self.encoded_X)
+        if val_mode:
+            # we can't use the 99 percentile in validation mode
+            # because we shouldn't cut the validation data
+            w = max([len(x) for x in self.encoded_X])
+        else:
+            w = find_width_99_percentile(self.encoded_X)
         print(f'w = {w}')
         # pad the data
         self.encoded_X = [x + [self.char_encoder.get_pad_id()] * (w - len(x))
@@ -145,5 +151,7 @@ if __name__ == '__main__':
     data_loader = DataLoader(dataset, batch_size=2, shuffle=True)
 
     sample = next(iter(data_loader))
-    print(sample['input'].shape)
-    print(sample['output'].shape)
+    print(sample[0].shape)
+    print(sample[1].shape)
+    print(sample[0])
+    print(sample[1])
