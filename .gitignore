@@ -161,3 +161,14 @@ cython_debug/
 #.idea/
 
 /clean_out
+
+/__pycache__
+
+# .idea
+.idea
+
+/Delivery
+
+/dataset
+
+
