@@ -5,10 +5,10 @@
 from numpy import mean
 import torch
 from torch.utils.data import Dataset, DataLoader
-from encoders.out_encoder import OutputEncoder
-from encoders.text_encoder import TextEncoder
+from out_encoder import OutputEncoder
+from text_encoder import TextEncoder
 import numpy as np
-from encoders.train_collections import *
+from train_collections import *
 input_file = 'clean_out/X.csv'
 output_file = 'clean_out/Y.csv'
 input_val = 'clean_out/X_val.csv'

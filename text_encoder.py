@@ -1,6 +1,3 @@
-
-from tkinter import NONE
-from constants import ARABIC_LETTERS
 from train_collections import *
 
 

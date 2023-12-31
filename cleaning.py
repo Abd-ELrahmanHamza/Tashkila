@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[17]:
 
 
 # to reload modules automatically without having to restart the kernel
@@ -9,7 +9,7 @@ import os
 import pandas as pd
 
 
-# In[6]:
+# In[18]:
 
 
 # set directory paths
@@ -17,7 +17,7 @@ DATASET_FOLDER = 'dataset'
 CLEAN_OUT_FOLDER = 'clean_out'
 
 
-# In[7]:
+# In[19]:
 
 
 # read dataset train 
@@ -41,7 +41,7 @@ def read_dataset(file_name = 'train.txt' ,verbose=False):
 read_dataset(verbose=True)
 
 
-# In[8]:
+# In[20]:
 
 
 # geet all the tashkeel in the text 
@@ -55,7 +55,7 @@ for text in read_dataset():
 print(All_NON_Letters)
 
 
-# In[9]:
+# In[21]:
 
 
 from constants import PUNCTUATIONS
@@ -97,7 +97,7 @@ cleaned = clean_text(non_letters)
 print(cleaned) # only tashkeel  and spaces left -> for now 
 
 
-# In[12]:
+# In[22]:
 
 
 # Create X and Y to the model
@@ -106,7 +106,7 @@ print(cleaned) # only tashkeel  and spaces left -> for now
 # Y is a list of all Diacritics in the dataset (the target)
 # if the character has no diacritic, the diacritic is set to be $ (empty diacritic)
 from constants.arabic import HARAKAT,SHADDA,ARABIC_LETTERS
-from encoders.train_collections import harakat2id
+from train_collections import harakat2id
 from tqdm import tqdm
 import pandas as pd
 train = read_dataset()
@@ -227,7 +227,7 @@ convert_to_gold_standard_format(X, Y)
 
 
 
-# In[13]:
+# In[23]:
 
 
 # print them side by side 
@@ -237,7 +237,7 @@ for x, y in zip(X[544], Y[544]):
     print(x, y)
 
 
-# In[14]:
+# In[24]:
 
 
 # val dataset too 
@@ -249,7 +249,7 @@ convert_to_gold_standard_format(X, Y,name='val')
 save_dataset(X, Y, X_words, x_file='X_val.csv', y_file='Y_val.csv', x_words_file='X_words_val.txt')
 
 
-# In[15]:
+# In[25]:
 
 
 # test dataset too
@@ -259,7 +259,7 @@ convert_to_gold_standard_format(X, Y,name='test')
 save_dataset(X, Y, X_words, x_file='X_test.csv', y_file='Y_test.csv', x_words_file='X_words_test.txt')
 
 
-# In[16]:
+# In[ ]:
 
 
 def merge_all_text(file_names: list[str]):

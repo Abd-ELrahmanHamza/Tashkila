@@ -177,4 +177,7 @@ cython_debug/
 #.vscode
 .vscode
 
+# results
+/results
+
 
