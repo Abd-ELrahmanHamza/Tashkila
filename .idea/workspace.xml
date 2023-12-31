@@ -7,8 +7,7 @@
     <list default="true" id="45d69a52-e93d-4b59-9786-d3bacb09f552" name="Changes" comment="add attention mechanism">
       <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_19_2023_3_16_AM__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_12_19_2023_3_16_AM__Changes_.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AccioTraining.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/AccioTraining.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/Accio.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/Accio.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clean_out/embedding_weights.npy" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

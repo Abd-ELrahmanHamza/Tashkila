@@ -2,28 +2,31 @@ from torch import nn
 import torch
 
 class Accio(nn.Module):
-    def __init__(self, input_size,output_size, embedding_size=128, hidden_size=64, device=torch.device('cpu')):
+    def __init__(self, input_size,output_size, embedding_size=64, hidden_size=32, device=torch.device('cpu')):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.embedding_size = embedding_size
         self.bidirectional = 2
-        self.num_layers = 3
         self.device = device
         self.embedding = nn.Embedding(input_size, embedding_size)
-        self.rnn = nn.LSTM(embedding_size, hidden_size, batch_first=True, bidirectional=True, num_layers=3)
-        self.fc = nn.Linear(2*hidden_size, output_size)
+        self.layer1 = nn.LSTM(embedding_size, hidden_size, batch_first=True, bidirectional=True)
+        self.layer2 = nn.LSTM(hidden_size*self.bidirectional, hidden_size, batch_first=True, bidirectional=True)
+        self.layer3 = nn.LSTM(hidden_size*self.bidirectional, hidden_size, batch_first=True, bidirectional=True)
+        self.fc = nn.Linear(self.bidirectional*hidden_size, output_size)
         self.loss = nn.CrossEntropyLoss()
 
+    # hn is the hidden state of the last timestep
+    # cn is the cell state of the last timestep
     def forward(self, x):
-        batch_size = x.shape[0]
-        h0 = torch.zeros(self.bidirectional*self.num_layers, batch_size, self.hidden_size).to(self.device)
-        c0 = torch.zeros(self.bidirectional*self.num_layers, batch_size, self.hidden_size).to(self.device)
         embeddings = self.embedding(x).to(self.device)
-        h, (hn, cn) = self.rnn(embeddings, (h0, c0))
-        # h is the output of the RNN
-        # hn is the hidden state of the last timestep
-        # cn is the cell state of the last timestep
+        # pass the input through the first layer
+        h, (hn, cn) = self.layer1(embeddings)
+        # pass the output of the first layer to the second layer
+        h, (hn, cn) = self.layer2(h, (hn, cn))
+        # pass the output of the second layer to the third layer
+        h, (hn, cn) = self.layer3(h, (hn, cn))
+        # pass the output of the third layer to the fully connected layer
         out = self.fc(h)
         return out
