@@ -19,7 +19,6 @@ class Accio(nn.Module):
         self.layer3 = nn.LSTM(hidden_size*self.bidirectional,
                               hidden_size, batch_first=True, bidirectional=True)
         self.fc = nn.Linear(self.bidirectional*hidden_size, output_size)
-        self.loss = nn.CrossEntropyLoss()
 
     # hn is the hidden state of the last timestep
     # cn is the cell state of the last timestep
