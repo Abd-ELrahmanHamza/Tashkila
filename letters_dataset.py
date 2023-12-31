@@ -2,15 +2,13 @@
     This file is used to create a dataset of letters from the dataset of words in the dataset folder.
 """
 
-from re import T
-from uu import encode
 from numpy import mean
 import torch
 from torch.utils.data import Dataset, DataLoader
-from out_encoder import OutputEncoder
-from text_encoder import TextEncoder
+from encoders.out_encoder import OutputEncoder
+from encoders.text_encoder import TextEncoder
 import numpy as np
-from train_collections import *
+from encoders.train_collections import *
 input_file = 'clean_out/X.csv'
 output_file = 'clean_out/Y.csv'
 input_val = 'clean_out/X_val.csv'

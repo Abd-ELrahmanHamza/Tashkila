@@ -171,4 +171,12 @@ cython_debug/
 
 /dataset
 
+/results
+
+# .ipynb_checkpoints
+.ipynb_checkpoints
+
+#.vscode
+.vscode
+
 

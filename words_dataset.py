@@ -5,9 +5,7 @@
 from numpy import mean
 import torch
 from torch.utils.data import Dataset, DataLoader
-from text_encoder import TextEncoder
 import numpy as np
-from train_collections import DS_ARABIC_LETTERS, DS_HARAKAT
 from seq2seq.byte_pair_encoding import Byte_Pair_Encoding
 
 input_file = 'clean_out/X_words.txt'
