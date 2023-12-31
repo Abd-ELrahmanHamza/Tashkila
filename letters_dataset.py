@@ -56,17 +56,18 @@ class LettersDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', val_mode=False, device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
+    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', val_mode=False, return_sentance=False, device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
         """
+        self.return_sentance = return_sentance
         # input encoder
         self.char_encoder = TextEncoder(DS_ARABIC_LETTERS, special_tokens)
         # output encoder
         self.harakat_encoder = OutputEncoder()
         X, Y = read_data(input_data_file, output_data_file, verbose=verbose)
-
+        self.X = X
         self.encoded_X = []
         self.encoded_Y = []
 
@@ -123,7 +124,8 @@ class LettersDataset(Dataset):
             :param index: The index of the item to get.
             :return: The item at the given index.
         """
-
+        if self.return_sentance:
+            return self.encoded_X[index], self.encoded_Y[index], self.X[index]
         return self.encoded_X[index], self.encoded_Y[index]
 
     def __len__(self):
@@ -142,8 +144,7 @@ class LettersDataset(Dataset):
 
 
 if __name__ == '__main__':
-    read_data(input_file, output_file, verbose=True)
-    dataset = LettersDataset()
+    dataset = LettersDataset(return_sentance=True)
     print(dataset[0])
     print("returned successfully without errors")
     print(len(dataset))
