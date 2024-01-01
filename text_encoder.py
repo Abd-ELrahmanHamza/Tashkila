@@ -2,6 +2,7 @@
 from tkinter import NONE
 from constants import ARABIC_LETTERS
 from train_collections import *
+import torch
 
 
 class TextEncoder:
@@ -33,6 +34,20 @@ class TextEncoder:
         if letter in ARABIC_LETTERS:
             return letter
         return None
+
+    def is_arabic_letter_batch(self, ids,device):
+        # Convert ARABIC_LETTERS to a tensor for fast comparison
+        arabic_letters_ids = torch.tensor(
+            [self.word2idx[letter] for letter in ARABIC_LETTERS if letter in self.word2idx], dtype=torch.long).to(device)
+
+        # Expand ids to compare against all Arabic letters
+        ids_expanded = ids.unsqueeze(1)
+        comparison = ids_expanded == arabic_letters_ids
+
+        # Any row with a True value is an Arabic letter
+        is_arabic = comparison.any(dim=1)
+
+        return is_arabic
 
     def get_pad_id(self):
         return self.get_id_by_token(PAD_TOKEN)

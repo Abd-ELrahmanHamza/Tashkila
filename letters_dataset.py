@@ -11,10 +11,13 @@ from out_encoder import OutputEncoder
 from text_encoder import TextEncoder
 import numpy as np
 from train_collections import *
+from nltk.stem.isri import ISRIStemmer
+
 input_file = 'clean_out/X.csv'
 output_file = 'clean_out/Y.csv'
 input_val = 'clean_out/X_val.csv'
 output_val = 'clean_out/Y_val.csv'
+stemmer = ISRIStemmer()
 
 
 def read_data(input_file, output_file, verbose=False):
@@ -43,6 +46,22 @@ def read_data(input_file, output_file, verbose=False):
     return X, Y
 
 
+embedding_weights = np.load("embedding/embedding_weights.npy")
+
+
+def get_word_embedding(word, word2idx):
+    # print(word)
+    if word in word2idx:
+        return embedding_weights[word2idx[word]]
+    else:
+        return embedding_weights[word2idx["<UNK>"]]
+
+
+# Average word embedding
+def get_sentence_embedding(sentence, word2idx):
+    return np.mean([get_word_embedding(stemmer.stem(word), word2idx) for word in sentence.split()], axis=0)
+
+
 def find_width_99_percentile(data):
     # Flatten the list to get the lengths of all inner lists
     lengths = np.array([len(inner_list) for inner_list in data])
@@ -56,18 +75,23 @@ class LettersDataset(Dataset):
         This class is used to create a dataset of letters from the dataset of words in the dataset folder.
     """
 
-    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', val_mode=False, return_sentance=False, device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
+    def __init__(self, input_data_file='clean_out/X.csv', output_data_file='clean_out/Y.csv', val_mode=False, return_sent_emb=False, word2idx=None, device=torch.device('cpu'), special_tokens=[PAD_TOKEN, UNK_TOKEN], verbose=False):
         """
             This method is used to initialize the class.
             :param words_dataset: The dataset of words.
         """
-        self.return_sentance = return_sentance
+        self.return_sent_emb = return_sent_emb
+        self.word2idx = word2idx
         # input encoder
         self.char_encoder = TextEncoder(DS_ARABIC_LETTERS, special_tokens)
         # output encoder
         self.harakat_encoder = OutputEncoder()
         X, Y = read_data(input_data_file, output_data_file, verbose=verbose)
         self.X = X
+        if return_sent_emb:
+            self.emb = [get_sentence_embedding(
+                "".join(sent), self.word2idx) for sent in self.X]
+
         self.encoded_X = []
         self.encoded_Y = []
 
@@ -124,8 +148,8 @@ class LettersDataset(Dataset):
             :param index: The index of the item to get.
             :return: The item at the given index.
         """
-        if self.return_sentance:
-            return self.encoded_X[index], self.encoded_Y[index], self.X[index]
+        if self.return_sent_emb:
+            return self.encoded_X[index], self.encoded_Y[index], self.emb[index]
         return self.encoded_X[index], self.encoded_Y[index]
 
     def __len__(self):
@@ -144,7 +168,7 @@ class LettersDataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = LettersDataset(return_sentance=True)
+    dataset = LettersDataset(return_sent_emb=True)
     print(dataset[0])
     print("returned successfully without errors")
     print(len(dataset))

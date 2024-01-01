@@ -3,7 +3,7 @@ import torch
 
 
 class Accio(nn.Module):
-    def __init__(self, input_size, output_size, embedding_size=256, hidden_size=256, device=torch.device('cpu')):
+    def __init__(self, input_size, output_size, embedding_size=512, hidden_size=256, device=torch.device('cpu')):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -18,13 +18,19 @@ class Accio(nn.Module):
                               hidden_size, batch_first=True, bidirectional=True)
         self.layer3 = nn.LSTM(hidden_size*self.bidirectional,
                               hidden_size, batch_first=True, bidirectional=True)
-        self.fc = nn.Linear(self.bidirectional*hidden_size, output_size)
-
+        self.fc = nn.Linear(self.bidirectional*hidden_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_size, output_size)
     # hn is the hidden state of the last timestep
     # cn is the cell state of the last timestep
-    def forward(self, x):
+    def forward(self, x, h0=None):
         embeddings = self.embedding(x).to(self.device)
         # pass the input through the first layer
+        if h0 is None:
+            h, (hn, cn) = self.layer1(embeddings)
+        else:
+            h, (hn, cn) = self.layer1(embeddings, h0, h0)
+
         h, (hn, cn) = self.layer1(embeddings)
         # pass the output of the first layer to the second layer
         h, (hn, cn) = self.layer2(h, (hn, cn))
@@ -32,4 +38,6 @@ class Accio(nn.Module):
         h, (hn, cn) = self.layer3(h, (hn, cn))
         # pass the output of the third layer to the fully connected layer
         out = self.fc(h)
+        out = self.relu(out)
+        out = self.fc2(out)
         return out
