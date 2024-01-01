@@ -2,7 +2,7 @@ from torch import nn
 import torch
 
 class Accio(nn.Module):
-    def __init__(self, input_size,output_size, embedding_size=32, hidden_size=16, device=torch.device('cpu')):
+    def __init__(self, input_size,output_size, embedding_size=512, hidden_size=256, device=torch.device('cpu')):
         super().__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
