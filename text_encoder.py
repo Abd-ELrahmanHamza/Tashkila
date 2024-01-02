@@ -37,6 +37,9 @@ class TextEncoder:
     def get_id_by_token(self, token):
         return self.word2idx[token]
 
+    def get_token_by_id(self, idx):
+        return self.idx2word[idx]
+
     def get_vocab_size(self):
         return self.vocab_size
 
